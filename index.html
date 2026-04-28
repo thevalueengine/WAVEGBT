@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WAVE — Goodbye to Tasks | The Value Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:        #092F4F;
+    --navy-light:  #155D86;
+    --navy-mid:    #3F6E97;
+    --cyan:        #0BBBEF;
+    --cyan-alt:    #15B2CD;
+    --cyan-pale:   #78C9F1;
+    --bg:          #F0F6FA;
+    --surface:     #FFFFFF;
+    --border:      #C8DCEA;
+    --text:        #092F4F;
+    --muted:       #5A7A92;
+    --accent:      #092F4F;
+    --accent-light:#155D86;
+    --accent-pale: #E0F3FB;
+    --tag-bg:      #DFF0F9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 3px solid var(--cyan);
+  }
+
+  .logo-svg {
+    height: 42px;
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .header-divider {
+    width: 1px;
+    height: 36px;
+    background: var(--navy-mid);
+    flex-shrink: 0;
+  }
+
+  .header-text h1 {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.02em;
+  }
+  .header-text p {
+    font-size: 11px;
+    color: var(--cyan-pale);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+
+  .app { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .stage { display: none; }
+  .stage.active { display: block; }
+
+  .steps {
+    display: flex; margin-bottom: 36px;
+    border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(9,47,79,0.07);
+  }
+  .step {
+    flex: 1; padding: 10px 12px; background: var(--surface);
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    text-align: center; border-right: 1px solid var(--border);
+    text-transform: uppercase; letter-spacing: 0.07em; transition: all 0.2s;
+    font-family: 'Exo 2', sans-serif;
+  }
+  .step:last-child { border-right: none; }
+  .step.active { background: var(--navy); color: #fff; }
+  .step.done { background: var(--accent-pale); color: var(--navy); }
+
+  .progress-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-bottom: 28px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--cyan); border-radius: 2px; transition: width 0.5s ease; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(9,47,79,0.07);
+  }
+  .card h2 {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 24px; font-weight: 700;
+    margin-bottom: 8px; color: var(--navy);
+    letter-spacing: -0.01em;
+  }
+  .card p { color: var(--muted); font-size: 14px; line-height: 1.65; margin-bottom: 16px; }
+
+  label {
+    display: block; font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); margin-bottom: 6px;
+    font-family: 'Exo 2', sans-serif;
+  }
+  textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 7px;
+    padding: 14px 16px; font-family: 'DM Mono', monospace;
+    font-size: 13px; line-height: 1.65; background: var(--bg);
+    color: var(--text); resize: vertical; transition: border-color 0.2s; min-height: 200px;
+  }
+  textarea:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(11,187,239,0.12); }
+  input[type="text"] {
+    width: 100%; border: 1px solid var(--border); border-radius: 7px;
+    padding: 11px 14px; font-family: 'Open Sans', sans-serif;
+    font-size: 14px; background: var(--bg); color: var(--text); transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(11,187,239,0.12); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border-radius: 7px; font-size: 14px;
+    font-weight: 600; cursor: pointer; border: none;
+    transition: all 0.15s; font-family: 'Exo 2', sans-serif;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary { background: var(--cyan); color: var(--navy); }
+  .btn-primary:hover { background: var(--cyan-alt); }
+  .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--cyan); color: var(--navy); }
+  .btn-copy { background: var(--accent-pale); color: var(--navy-light); border: 1px solid var(--cyan-pale); font-size: 13px; padding: 7px 14px; font-family: 'Exo 2', sans-serif; font-weight: 600; }
+  .btn-copy:hover { background: #c4e8f7; }
+
+  /* WAVE track */
+  .wave-track { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; align-items: flex-end; }
+  .wave-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .wave-letter {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Exo 2', sans-serif; font-size: 17px; font-weight: 700;
+    background: var(--tag-bg); color: var(--muted);
+    border: 1px solid var(--border); transition: all 0.2s; position: relative;
+  }
+  .wave-letter.active { background: var(--cyan); color: var(--navy); border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(11,187,239,0.2); }
+  .wave-letter.done { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .wave-letter.done::after {
+    content: '✓'; position: absolute; top: -5px; right: -5px;
+    font-size: 8px; background: var(--cyan); color: var(--navy);
+    border-radius: 50%; width: 15px; height: 15px;
+    display: flex; align-items: center; justify-content: center; font-family: sans-serif; font-weight: 700;
+  }
+  .wave-desc { font-size: 10px; color: var(--muted); text-align: center; font-family: 'DM Mono', monospace; max-width: 52px; line-height: 1.3; }
+
+  /* Conversation */
+  .conversation { display: flex; flex-direction: column; gap: 14px; }
+  .msg { display: flex; gap: 12px; align-items: flex-start; animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg-avatar {
+    width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; margin-top: 2px;
+    font-family: 'Exo 2', sans-serif; letter-spacing: 0.03em;
+  }
+  .msg.assistant .msg-avatar { background: var(--navy); color: var(--cyan); }
+  .msg.user .msg-avatar { background: var(--tag-bg); color: var(--navy-light); }
+  .msg.user { flex-direction: row-reverse; }
+  .msg-bubble { max-width: 80%; padding: 12px 16px; border-radius: 10px; font-size: 14px; line-height: 1.65; }
+  .msg.assistant .msg-bubble { background: var(--surface); border: 1px solid var(--border); border-top-left-radius: 3px; }
+  .msg.user .msg-bubble { background: var(--accent-pale); border: 1px solid #9dd6f0; border-top-right-radius: 3px; color: var(--navy); }
+  .msg-section-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.09em; color: var(--cyan-alt); margin-bottom: 4px; font-family: 'Exo 2', sans-serif; }
+
+  .conversation-wrap { max-height: 500px; overflow-y: auto; padding-right: 4px; margin-bottom: 16px; }
+  .conversation-wrap::-webkit-scrollbar { width: 4px; }
+  .conversation-wrap::-webkit-scrollbar-thumb { background: var(--cyan-pale); border-radius: 2px; }
+
+  .typing-indicator { display: flex; gap: 4px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; border-top-left-radius: 3px; width: fit-content; }
+  .typing-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); animation: bounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+
+  .chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
+  .chat-input-row textarea { min-height: 60px; max-height: 150px; font-family: 'Open Sans', sans-serif; font-size: 14px; }
+
+  /* Output */
+  .output-tabs { display: flex; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .output-tab { flex: 1; padding: 11px 16px; background: var(--surface); font-size: 13px; font-weight: 600; color: var(--muted); text-align: center; border-right: 1px solid var(--border); cursor: pointer; transition: all 0.15s; font-family: 'Exo 2', sans-serif; }
+  .output-tab:last-child { border-right: none; }
+  .output-tab.active { background: var(--navy); color: #fff; }
+  .output-tab:hover:not(.active) { background: var(--accent-pale); color: var(--navy); }
+
+  .output-panel { display: none; }
+  .output-panel.active { display: block; }
+
+  .output-section { margin-bottom: 14px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(9,47,79,0.05); }
+  .output-section-header { padding: 11px 18px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; font-family: 'Exo 2', sans-serif; }
+  .output-section-header .cyan-bar { display: inline-block; width: 3px; height: 14px; background: var(--cyan); border-radius: 2px; margin-right: 10px; vertical-align: middle; }
+  .output-section-body { padding: 16px 20px; background: var(--surface); font-size: 14px; line-height: 1.75; }
+
+  .output-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+
+  .notice { background: var(--accent-pale); border: 1px solid var(--cyan-pale); border-radius: 7px; padding: 12px 16px; font-size: 13px; color: var(--navy-light); margin-bottom: 20px; border-left: 3px solid var(--cyan); }
+  .tbc { background: #FFF3CD; padding: 1px 5px; border-radius: 3px; font-size: 12px; color: #856404; }
+</style>
+</head>
+<body>
+
+<header>
+  <!-- Inline SVG logo (white version) -->
+  <svg class="logo-svg" viewBox="0 0 1920 854.4" xmlns="http://www.w3.org/2000/svg" aria-label="The Value Engine">
+    <style>.st0{fill:#FFFFFF;}.st1{fill:#0BBBEF;}</style>
+    <g>
+      <path class="st0" d="M677.8,108.5c6.7,0,8.6,1.9,7.7,10.6l-39.4,273.6c-17.3,68.2-55.7,75.8-127.7,75.8c-67.2,0-106.6-7.7-124.8-75.8L351.4,119c-1-8.6,1-10.6,8.6-10.6h63.4c4.8,0,5.8,1.9,8.6,10.6l33.6,256.3c6.7,23,41.3,25.9,52.8,25.9c13.4,0,49.9-2.9,55.7-25.9L604.8,118c1.9-8.6,2.9-10.6,8.6-10.6h64.3L677.8,108.5z"/>
+      <path class="st0" d="M1008,210.2v224.6c0,8.6-1,14.4-12.5,18.2c-33.6,9.6-90.2,14.4-145,14.4c-90.2,0-136.3-14.4-136.3-107.5c0-81.6,43.2-102.7,122.9-102.7h93.1v-33.6c0-36.5-21.1-51.8-73-51.8H751.7c-7.7,0-9.6-1.9-9.6-9.6v-39.4c0-7.7,2.9-8.6,8.6-10.6c38.4-6.7,73.9-8.6,106.6-8.6C970.6,104.6,1008,141.1,1008,210.2z M841,313.9c-34.6,0-49.9,10.6-49.9,43.2c0,36.5,17.3,46.1,65.3,46.1c16.3,0,51.8-1,73.9-6.7v-81.6H841V313.9z"/>
+      <path class="st0" d="M1544.6,108.5c6.7,0,9.6,2.9,9.6,9.6v329.3c0,8.6-2.9,8.6-9.6,10.6c-48,9.6-104.6,10.6-144,10.6c-119,0-152.6-18.2-152.6-153.6V118.1c0-6.7,4.8-9.6,10.6-9.6h57.6c6.7,0,8.6,2.9,8.6,9.6v182.4c0,95,14.4,99.8,75.8,99.8h73.9V118.1c0-6.7,2.9-9.6,9.6-9.6H1544.6z"/>
+      <path class="st0" d="M613.4,845.8c-4.8,0-6.7-1.9-8.6-10.6l-31.7-256.3c-5.8-23-41.3-25.9-55.7-25.9c-10.6,0-46.1,2.9-52.8,25.9L432,835.2c-2.9,8.6-2.9,10.6-8.6,10.6H360c-6.7,0-9.6-1.9-8.6-10.6l42.2-273.6c18.2-68.2,57.6-75.8,124.8-75.8c72,0,110.4,8.6,127.7,75.8l39.4,273.6c1,8.6-1,10.6-7.7,10.6L613.4,845.8z"/>
+      <path class="st0" d="M857.3,848.6c-32.6,0-68.2-1-106.6-8.6c-6.7-1-8.6-2.9-8.6-10.6V790c0-7.7,1.9-9.6,9.6-9.6h105.6c51.8,0,73-15.4,73-51.8V695h-93.1c-79.7,0-122.9-20.2-122.9-102.7c0-93.1,46.1-107.5,136.3-107.5c54.7,0,111.4,4.8,145,14.4c11.5,3.8,12.5,10.6,12.5,18.2V742C1008,813.1,970.6,848.6,857.3,848.6z M930.2,640.3v-81.6c-22.1-5.8-57.6-6.7-73.9-6.7c-48,0-65.3,8.6-65.3,46.1c0,32.6,15.4,43.2,49.9,43.2h89.3V640.3z"/>
+      <path class="st0" d="M1485.1,845.8c-6.7,0-9.6-2.9-9.6-9.6V553.9h-73.9c-60.5,0-75.8,4.8-75.8,99.8v182.4c0,6.7-2.9,9.6-8.6,9.6h-57.6c-6.7,0-10.6-2.9-10.6-9.6V639.4c0-134.4,33.6-153.6,152.6-153.6c38.4,0,96,1,144,10.6c6.7,1,9.6,1.9,9.6,10.6v329.3c0,6.7-2.9,9.6-9.6,9.6C1545.6,845.8,1485.1,845.8,1485.1,845.8z"/>
+      <path class="st1" d="M1156.8,548.2c6.7,0,9.6,2.9,9.6,9.6v287c0,6.7-2.9,9.6-9.6,9.6h-58.6c-6.7,0-9.6-2.9-9.6-9.6v-287c0-6.7,2.9-9.6,9.6-9.6H1156.8z"/>
+      <path class="st1" d="M1156.8,439.7c6.7,0,9.6,2.9,9.6,9.6V505c0,6.7-2.9,9.6-9.6,9.6h-58.6c-6.7,0-9.6-2.9-9.6-9.6v-55.7c0-6.7,2.9-9.6,9.6-9.6L1156.8,439.7z"/>
+      <g>
+        <path class="st1" d="M49,282.2c2.9-1,3.8,1,3.8,2.9v31.7h22.1c1.9,0,3.8,1,3.8,3.8V335c0,2.9-1,3.8-3.8,3.8H52.8V408c0,9.6,2.9,12.5,14.4,12.5h9.6c2.9,0,3.8,1,3.8,2.9v15.4c0,1.9-1,2.9-3.8,2.9c-6.7,1-12.5,1.9-16.3,1.9c-17.3,0-36.5,0-36.5-27.8V338H12.5c-1.9,0-3.8-1-3.8-3.8v-14.4c0-1.9,1-3.8,3.8-3.8H25v-25.9c0-1.9,1-2.9,2.9-3.8L49,282.2z"/>
+        <path class="st1" d="M123.8,268.8c1.9,0,3.8,1,3.8,3.8v44.2c9.6-1,20.2-1,26.9-1c42.2,0,53.8,6.7,53.8,53.8v69.1c0,1.9-1,3.8-3.8,3.8h-20.2c-1.9,0-3.8-1-3.8-3.8v-64.3c0-33.6-4.8-35.5-26.9-35.5h-25.9v99.8c0,1.9-1,3.8-3.8,3.8h-21.1c-1.9,0-2.9-1-2.9-3.8V272.6c0-1.9,1-3.8,3.8-3.8L123.8,268.8z"/>
+        <path class="st1" d="M339.8,377.3v6.7c0,3.8-1,5.8-7.7,5.8h-72c1,24,5.8,29.8,27.8,29.8h38.4c1.9,0,3.8,1,3.8,3.8v14.4c0,2.9-1,3.8-2.9,3.8c-12.5,1.9-25.9,2.9-40.3,2.9c-44.2,0-53.8-12.5-53.8-63.4s9.6-64.3,53.8-64.3C329.3,315.8,338.9,328.3,339.8,377.3z M260.2,370.6H312c0-25-4.8-30.7-25-30.7C265,339.8,260.2,346.6,260.2,370.6z"/>
+      </g>
+      <path class="st0" d="M1800,172.8h110.4c6.7,0,9.6-2.9,9.6-9.6v-40.3c0-6.7-2.9-9.6-8.6-10.6c-34.6-4.8-73.9-6.7-115.2-6.7c-125.8,0-154.6,36.5-154.6,181.4s28.8,181.4,154.6,181.4c41.3,0,81.6-1.9,115.2-6.7c5.8-1,8.6-3.8,8.6-10.6v-40.3c0-6.7-2.9-9.6-9.6-9.6H1800c-62.4,0-77.8-15.4-79.7-82.6h140.2c4.8,0,7.7-2.9,7.7-7.7v-47c0-4.8-2.9-7.7-7.7-7.7h-140.2C1722.2,188.2,1738.6,172.8,1800,172.8z"/>
+      <path class="st0" d="M1800,553.9h110.4c6.7,0,9.6-2.9,9.6-9.6V504c0-6.7-2.9-9.6-8.6-10.6c-34.6-4.8-73.9-6.7-115.2-6.7c-125.8,0-154.6,36.5-154.6,181.4s28.8,181.4,154.6,181.4c41.3,0,81.6-1.9,115.2-6.7c5.8-1,8.6-3.8,8.6-10.6V792c0-6.7-2.9-9.6-9.6-9.6H1800c-62.4,0-77.8-15.4-79.7-82.6h140.2c4.8,0,7.7-2.9,7.7-7.7v-47c0-4.8-2.9-7.7-7.7-7.7h-140.2C1722.2,569.3,1738.6,553.9,1800,553.9z"/>
+      <path class="st0" d="M158.4,553.9h110.4c6.7,0,9.6-2.9,9.6-9.6V504c0-6.7-2.9-9.6-8.6-10.6c-34.6-4.8-73.9-6.7-115.2-6.7C28.8,486.7,0,522.2,0,668.2s28.8,181.4,154.6,181.4c41.3,0,81.6-1.9,115.2-6.7c5.8-1,8.6-3.8,8.6-10.6V792c0-6.7-2.9-9.6-9.6-9.6H158.4c-62.4,0-77.8-15.4-79.7-82.6h140.2c4.8,0,7.7-2.9,7.7-7.7v-47c0-4.8-2.9-7.7-7.7-7.7H78.7C80.6,569.3,97,553.9,158.4,553.9z"/>
+      <path class="st1" d="M1098.2,406.1c-6.7,0-9.6-2.9-9.6-9.6V9.6c0-6.7,2.9-9.6,9.6-9.6h58.6c6.7,0,9.6,2.9,9.6,9.6v386.9c0,6.7-2.9,9.6-9.6,9.6H1098.2z"/>
+    </g>
+  </svg>
+
+  <div class="header-divider"></div>
+
+  <div class="header-text">
+    <h1>WAVE — Goodbye to Tasks</h1>
+    <p>Task Card Builder</p>
+  </div>
+</header>
+
+<div class="app">
+
+  <div class="steps" id="stepBar">
+    <div class="step active" id="step1">1. Setup</div>
+    <div class="step" id="step2">2. Clarify</div>
+    <div class="step" id="step3">3. Task Card</div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar" style="width:10%"></div>
+  </div>
+
+  <!-- STAGE 1 -->
+  <div class="stage active" id="stage1">
+    <div class="card">
+      <h2>New Task Card</h2>
+      <p>Paste a transcript or rough notes from your task walkthrough. Claude will ask one question per WAVE GBT section, then generate a Task Card and Cheat Sheet ready to paste into Notion or Loop.</p>
+
+      <div style="margin-bottom:20px;">
+        <label>Task name</label>
+        <input type="text" id="taskName" placeholder="e.g. Meeting Reminder Sequence, Client Onboarding Setup…">
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label>Transcript or notes</label>
+        <textarea id="transcriptInput" placeholder="Paste your transcript or rough notes here…" style="min-height:260px;"></textarea>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button class="btn btn-primary" id="startBtn" onclick="startConversation()">Start Building →</button>
+      </div>
+    </div>
+    <div class="notice">
+      💡 <strong>Tip:</strong> A short spoken walkthrough is enough. Cover what the task is, who does it, what tools are needed, and how long it takes. Claude will fill in the gaps.
+    </div>
+  </div>
+
+  <!-- STAGE 2 -->
+  <div class="stage" id="stage2">
+    <div class="card" style="padding-bottom:16px;">
+      <h2 id="convTitle">Clarifying Questions</h2>
+      <p style="margin-bottom:14px;">One question per section. The more detail you give, the better the output.</p>
+
+      <div class="wave-track" id="waveTrack"></div>
+
+      <div class="conversation-wrap">
+        <div class="conversation" id="conversation"></div>
+      </div>
+
+      <div id="chatInputArea">
+        <div class="chat-input-row">
+          <textarea id="userInput" placeholder="Type your answer…" onkeydown="handleKey(event)" style="flex:1;"></textarea>
+          <button class="btn btn-primary" id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+        <div style="margin-top:8px; text-align:right;">
+          <button class="btn btn-ghost" style="font-size:12px;" onclick="skipToGenerate()">Skip — generate now</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 3 -->
+  <div class="stage" id="stage3">
+    <div class="card">
+      <h2 id="outputTitle">Task Card</h2>
+
+      <div class="output-tabs">
+        <div class="output-tab active" onclick="switchTab('taskcard', this)">WAVE GBT Task Card</div>
+        <div class="output-tab" onclick="switchTab('cheatsheet', this)">Cheat Sheet</div>
+      </div>
+
+      <div class="output-panel active" id="panel-taskcard">
+        <div id="taskCardContent"></div>
+      </div>
+      <div class="output-panel" id="panel-cheatsheet">
+        <div id="cheatSheetContent"></div>
+      </div>
+
+      <div class="output-actions">
+        <button class="btn btn-primary" onclick="copyAll()">Copy Full Output</button>
+        <button class="btn btn-ghost" onclick="resetTool()">Start New Task</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API_URL = 'https://pipeline-overview.ben-e48.workers.dev';
+// ============================================================
+
+const SECTIONS = [
+  { key: 'W', label: 'What',            desc: 'Purpose,\ntrigger,\nresult' },
+  { key: 'A', label: 'Access',          desc: 'Tools &\nsystems' },
+  { key: 'V', label: 'Variables',       desc: 'What changes\neach time' },
+  { key: 'E', label: 'Explain How',     desc: 'Video &\nsteps' },
+  { key: 'G', label: 'Good Looks Like', desc: 'Ideal\noutcome' },
+  { key: 'B', label: 'Backstop Checks', desc: 'Quality\nchecks' },
+  { key: 'T', label: 'Time',            desc: 'Time &\npriority' },
+];
+
+const SYSTEM_PROMPT = `You are WAVE GBT Task Builder for The Value Engine, a business consultancy based in Devon that helps service businesses systematise their operations.
+
+Your job is to turn a spoken walkthrough or rough notes into a structured WAVE GBT Task Card and a separate Cheat Sheet.
+
+The WAVE GBT framework has exactly 7 sections in this order:
+W — What (three sub-sections: Purpose, Trigger, Result Required)
+A — Access (Tools, Templates/Files, Systems — include known internal links where relevant)
+V — Variables (list fields that change each time, as placeholders e.g. "Client Name:", "Meeting Date:")
+E — Explain How (Video walkthrough link placeholder, then a Cheat Sheet of 6–10 numbered steps)
+G — Good Looks Like (bullet points describing what ideal completion looks like)
+B — Backstop Checks (5–10 checkboxes using ☐, each check must be objective)
+T — Time (expected completion time and priority)
+
+Rules:
+- Use British English
+- Be concise and operational — no long paragraphs
+- Use bullet points throughout
+- Mark anything unknown as [TBC]
+- Never invent tools, links, or permissions
+- Outputs must be clean and copy-pasteable into Notion or Microsoft Loop`;
+
+let conversationHistory = [];
+let currentSectionIndex = 0;
+let transcript = '';
+let taskName = '';
+let isLoading = false;
+
+function updateSteps(active) {
+  ['step1','step2','step3'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = 'step';
+    if (i + 1 < active) el.classList.add('done');
+    else if (i + 1 === active) el.classList.add('active');
+  });
+  document.getElementById('progressBar').style.width = (active === 1 ? 10 : active === 2 ? 50 : 100) + '%';
+}
+
+function showStage(n) {
+  document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+  document.getElementById('stage' + n).classList.add('active');
+  updateSteps(n);
+}
+
+function buildWaveTrack() {
+  document.getElementById('waveTrack').innerHTML = SECTIONS.map((s, i) => `
+    <div class="wave-item">
+      <div class="wave-letter ${i === 0 ? 'active' : ''}" id="wl_${s.key}">${s.key}</div>
+      <div class="wave-desc">${s.label}</div>
+    </div>
+  `).join('');
+}
+
+function updateWaveTrack() {
+  SECTIONS.forEach((s, i) => {
+    const el = document.getElementById('wl_' + s.key);
+    if (!el) return;
+    el.className = 'wave-letter';
+    if (i < currentSectionIndex) el.classList.add('done');
+    else if (i === currentSectionIndex) el.classList.add('active');
+  });
+}
+
+function addMessage(role, text, sectionLabel) {
+  const conv = document.getElementById('conversation');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = `
+    <div class="msg-avatar">${role === 'assistant' ? 'TVE' : 'You'}</div>
+    <div>
+      ${sectionLabel ? `<div class="msg-section-tag">${sectionLabel}</div>` : ''}
+      <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>
+    </div>`;
+  conv.appendChild(div);
+  document.querySelector('.conversation-wrap').scrollTop = 99999;
+}
+
+function showTyping() {
+  const conv = document.getElementById('conversation');
+  const div = document.createElement('div');
+  div.className = 'msg assistant'; div.id = 'typingMsg';
+  div.innerHTML = `<div class="msg-avatar">TVE</div><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  conv.appendChild(div);
+  document.querySelector('.conversation-wrap').scrollTop = 99999;
+}
+
+function removeTyping() { const t = document.getElementById('typingMsg'); if (t) t.remove(); }
+
+async function callAPI(messages, maxTokens) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: maxTokens || 1000, system: SYSTEM_PROMPT, messages })
+  });
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+async function startConversation() {
+  transcript = document.getElementById('transcriptInput').value.trim();
+  taskName = document.getElementById('taskName').value.trim() || 'New Task';
+  if (!transcript) { alert('Please paste a transcript or notes first.'); return; }
+  document.getElementById('startBtn').disabled = true;
+  conversationHistory = [];
+  currentSectionIndex = 0;
+  showStage(2);
+  document.getElementById('convTitle').textContent = taskName;
+  buildWaveTrack();
+  await askSection(0);
+}
+
+async function askSection(index) {
+  currentSectionIndex = index;
+  updateWaveTrack();
+  if (index >= SECTIONS.length) { await generateOutput(); return; }
+
+  const section = SECTIONS[index];
+  const prompt = index === 0
+    ? `The user has provided a transcript of a task walkthrough. Extract what you can, then ask one focused question to confirm or fill in the W — What section (Purpose, Trigger, Result Required). Keep it brief. End with [W — What].\n\nTranscript:\n"""\n${transcript}\n"""`
+    : `Good. Now move to ${section.key} — ${section.label}. Extract what you can from the transcript and answers so far, then ask one focused question to fill any gaps. Keep it brief. End with [${section.key} — ${section.label}].`;
+
+  conversationHistory.push({ role: 'user', content: prompt });
+  showTyping();
+  try {
+    const reply = await callAPI(conversationHistory);
+    removeTyping();
+    conversationHistory.push({ role: 'assistant', content: reply });
+    addMessage('assistant', reply, `${section.key} — ${section.label}`);
+  } catch(e) { removeTyping(); addMessage('assistant', 'Something went wrong — please try again.', ''); }
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text) return;
+  addMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+  input.value = '';
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  currentSectionIndex++;
+
+  if (currentSectionIndex >= SECTIONS.length) { await generateOutput(); return; }
+
+  const section = SECTIONS[currentSectionIndex];
+  conversationHistory.push({ role: 'user', content: `Good. Now move to ${section.key} — ${section.label}. Extract what you can from the transcript and all answers so far, then ask one focused question to fill any gaps. End with [${section.key} — ${section.label}].` });
+  showTyping(); updateWaveTrack();
+  try {
+    const reply = await callAPI(conversationHistory);
+    removeTyping();
+    conversationHistory.push({ role: 'assistant', content: reply });
+    addMessage('assistant', reply, `${section.key} — ${section.label}`);
+  } catch(e) { removeTyping(); addMessage('assistant', 'Something went wrong — please try again.', ''); }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
+
+async function skipToGenerate() { await generateOutput(); }
+
+async function generateOutput() {
+  isLoading = true;
+  document.getElementById('chatInputArea').innerHTML = '<div class="notice">Generating your Task Card and Cheat Sheet…</div>';
+  showTyping();
+
+  conversationHistory.push({ role: 'user', content: `Based on the transcript and all answers, generate two outputs for the task "${taskName}":
+
+OUTPUT A — WAVE GBT TASK CARD
+Use these exact section headings:
+## W — What
+(Sub-bullets: Purpose, Trigger, Result Required)
+## A — Access
+(Tools, Templates/Files, Systems — mark unknowns as [TBC])
+## V — Variables
+(Field placeholders: "Client Name:", "Consultant:", etc.)
+## E — Explain How
+(Video Walkthrough: [TBC — add link], then numbered Cheat Sheet steps 1–10 max)
+## G — Good Looks Like
+(Bullet points — results not process)
+## B — Backstop Checks
+(☐ checkboxes — 5–10 objective checks)
+## T — Time
+(Expected time and priority)
+
+OUTPUT B — CHEAT SHEET
+Standalone. Title, 6–10 numbered steps, short and scannable.
+
+Mark anything unknown as [TBC]. British English. Clean formatting.` });
+
+  try {
+    const output = await callAPI(conversationHistory, 2000);
+    removeTyping();
+    window._fullOutput = output;
+    renderOutput(output);
+    showStage(3);
+  } catch(e) { removeTyping(); alert('Error generating output. Please try again.'); }
+}
+
+function renderOutput(text) {
+  document.getElementById('outputTitle').textContent = taskName + ' — Task Card';
+  const parts = text.split(/OUTPUT B|---\s*OUTPUT B/i);
+  const cardText = parts[0].replace(/OUTPUT A|---\s*OUTPUT A/i, '').trim();
+  const sheetText = parts[1] ? parts[1].trim() : '';
+
+  const tcContainer = document.getElementById('taskCardContent');
+  tcContainer.innerHTML = '';
+  cardText.split(/(?=^## )/m).filter(s => s.trim()).forEach(section => {
+    const lines = section.trim().split('\n');
+    const header = lines[0].replace(/^#+\s*/, '');
+    const body = lines.slice(1).join('\n').trim();
+    const div = document.createElement('div');
+    div.className = 'output-section';
+    div.innerHTML = `
+      <div class="output-section-header">
+        <span><span class="cyan-bar"></span>${header}</span>
+        <button class="btn btn-copy" onclick="copySection(this)" data-text="${encodeURIComponent(header + '\n\n' + body)}">Copy</button>
+      </div>
+      <div class="output-section-body">${formatBody(body)}</div>`;
+    tcContainer.appendChild(div);
+  });
+
+  document.getElementById('cheatSheetContent').innerHTML = `
+    <div class="output-section">
+      <div class="output-section-header">
+        <span><span class="cyan-bar"></span>Cheat Sheet — ${taskName}</span>
+        <button class="btn btn-copy" onclick="copySection(this)" data-text="${encodeURIComponent(sheetText)}">Copy</button>
+      </div>
+      <div class="output-section-body">${formatBody(sheetText)}</div>
+    </div>`;
+}
+
+function formatBody(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/^### (.*)/gm, '<strong style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:block;margin-top:10px;">$1</strong>')
+    .replace(/☐/g, '<span style="font-size:16px;">☐</span>')
+    .replace(/\[TBC\]/g, '<span class="tbc">[TBC]</span>')
+    .replace(/\n/g, '<br>');
+}
+
+function switchTab(panel, tab) {
+  document.querySelectorAll('.output-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.output-panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById('panel-' + panel).classList.add('active');
+}
+
+function copySection(btn) {
+  navigator.clipboard.writeText(decodeURIComponent(btn.dataset.text)).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+function copyAll() {
+  navigator.clipboard.writeText(window._fullOutput || '').then(() => alert('Full output copied to clipboard.'));
+}
+
+function resetTool() {
+  if (!confirm('Start a new task? This will clear the current card.')) return;
+  document.getElementById('transcriptInput').value = '';
+  document.getElementById('taskName').value = '';
+  document.getElementById('conversation').innerHTML = '';
+  document.getElementById('taskCardContent').innerHTML = '';
+  document.getElementById('cheatSheetContent').innerHTML = '';
+  conversationHistory = []; currentSectionIndex = 0; isLoading = false;
+  document.getElementById('startBtn').disabled = false;
+  showStage(1);
+}
+</script>
+</body>
+</html>
